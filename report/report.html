@@ -49,7 +49,7 @@
 
 <h2>De data als graaf weergeven</h2>
 
-<p>De eerste stap is de ruwe SQL dumps van data.vti.be omvormen tot een samenwerkingsgraaf. De Python code in <a href="">GitHub</a> leest de SQL bestanden in een tijdelijke SQLite database, en met behulp van enkele queries en een klein algoritme wordt de edgelist opgebouwd. De Python code genereert dus een zogenaamde <a href="edgelist.el">edgelist</a>, die ik inlees in R met de code in <a href="">GitHub</a>. In principe had ik dit ook in Python kunnen doen, aangezien de R bibliotheek ook voor Python beschikbaar is. Een eerste, niet dynamische visualisatie van de volledige graaf vind je bovenaan deze pagina.</p>
+<p>De eerste stap is de ruwe SQL dumps van data.vti.be omvormen tot een samenwerkingsgraaf. De Python code in <a href="https://github.com/ruettet/datavtibesna">GitHub</a> leest de SQL bestanden in een tijdelijke SQLite database, en met behulp van enkele queries en een klein algoritme wordt de edgelist opgebouwd. De Python code genereert dus een zogenaamde edgelist, die ik inlees in R met de code in <a href="https://github.com/ruettet/datavtibesna">GitHub</a>. In principe had ik dit ook in Python kunnen doen, aangezien de R bibliotheek ook voor Python beschikbaar is. Een eerste, niet dynamische visualisatie van de volledige graaf vind je bovenaan deze pagina.</p>
 
 <p>Een eerste observatie is dat de graaf niet volledig aan elkaar hangt: er zijn een aantal groepjes van acteurs die geen aansluiting lijken te hebben met de grotere massa in het midden. Sommige van die groepjes zijn substantieel. Hieronder tonen we de groepen van meer dan 10 acteurs.</p>
 
@@ -131,7 +131,7 @@ Dat is dus ook een indicatie voor de mogelijkheid dat het hier niet om een aanee
   <li>Betweenness centraliteit: deze maat geeft aan hoe vaak een acteur een brug bouwt in een samenwerkingsrelatie tussen twee andere acteurs.</li>
 </ul>
 
-<footer>Data in CC-BY-NC aangeleverd door het Vlaams Theater Instituut, data.vti.be. Analyse door <a href="http://be.linkedin.com/in/ruettet">Tom Ruette</a>. Laatste update: 2016/01/24/.</footer>
+<footer>Data in CC-BY-NC aangeleverd door het Vlaams Theater Instituut, data.vti.be. Analyse door <a href="http://be.linkedin.com/in/ruettet">Tom Ruette</a>, code beschikbaar op <a href="https://github.com/ruettet/datavtibesna/">GitHUB</a>. Laatste update: 2016/01/23/.</footer>
 
 <script type="text/javascript">
   // create an array with nodes
