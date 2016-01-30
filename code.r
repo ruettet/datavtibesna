@@ -1,17 +1,24 @@
 # prepare
-# data from last ten seasons on data.vti.be, only selected collaborations between people in productions with function "acteur"
+# data from last ten seasons on data.vti.be
+# only selected collaborations between people with functions 11571, 11741, 11933, 11971, 11977, 12009, 12014, 12018, 12019, 12092, 12156
+# where production is not a rerun of anything
 
 library(igraph)
 library(jsonlite)
 
-setwd("C:/Users/ruet/Documents/datasets/data-vti-be/")
+#setwd("C:/Users/ruet/Documents/datasets/data-vti-be/")
 df = read.delim("edgelist.el", sep="\t", header=F)
 df$V1 = as.character(df$V1)
 df$V2= as.character(df$V2)
 g = graph.edgelist(as.matrix(df), directed = FALSE)
 E(g)$weight <- 1 
-g.simple = simplify(g, remove.loops=FALSE) # simplify graph by mapping duplicate edges onto each other, sum weight
+g.simple = simplify(g, remove.loops=TRUE) # simplify graph by mapping duplicate edges onto each other, sum weight
 
+# remove passanten
+g.simple = delete.edges(g.simple, which(E(g.simple)$weight < 2))
+g.simple = delete.vertices(g.simple, which(degree(g.simple) < 2))
+
+# read in persontable
 persontable = read.delim("person.table", sep="\t", header=F)
 persontable$V1 = as.character(persontable$V1)
 
@@ -19,7 +26,7 @@ persontable$V1 = as.character(persontable$V1)
 vcount(g.simple)
 
 # make plot, may take a while...
-png("full_graph.png", width=5000, height=2500, res=200)
+png("report/full_graph.png", width=5000, height=2500, res=200)
 plot(g.simple,
   layout = layout.fruchterman.reingold,
   vertex.label = NA,
@@ -28,7 +35,9 @@ plot(g.simple,
 dev.off()
 
 # how many actors play how often together
+png("report/samenwerkingsfrequentiedistributie.png", width=1000, height=600, res=100)
 hist(E(g.simple)$weight, breaks=seq(1, max(E(g.simple)$weight), 1), freq=FALSE)
+dev.off()
 
 # get subgraphs
 V(g.simple)$cluster <- clusters(g.simple)$membership
@@ -37,11 +46,8 @@ V(g.simple)$cluster <- clusters(g.simple)$membership
 sort(clusters(g.simple)$csize, decreasing=TRUE)[1] / sum(clusters(g.simple)$csize)
 
 # who is in the sizeable seperate subgraphs?
-## cutting off the biggest group, this is the distribution
-hist(clusters(g.simple)$csize[c(2:53)], breaks=16)
-
-## let's look at unconnected groups of 10 people and more
-tenplusgroups = c(1:53)[clusters(g.simple)$csize < 20 & clusters(g.simple)$csize > 10]
+# let's look at unconnected groups of 5 people and more
+tenplusgroups = c(1:length(clusters(g.simple)$csize))[clusters(g.simple)$csize < 100 & clusters(g.simple)$csize >= 10]
 for (i in tenplusgroups){
   print(i)
   for (j in (V(g.simple)[V(g.simple)$cluster == i])$name) {
@@ -54,14 +60,16 @@ g.simple.trim = induced.subgraph(g.simple, V(g.simple)[V(g.simple)$cluster == wh
 vcount(g.simple.trim)
 
 # how many actors play how often together
+png("report/samenwerkingsfrequentiedistributie_mainstream.png", width=1000, 600, res=100)
 hist(E(g.simple.trim)$weight, breaks=seq(min(E(g.simple.trim)$weight), max(E(g.simple.trim)$weight), 1), freq=FALSE)
+dev.off()
 
 # let us see if there are any communities in this
 fgc = fastgreedy.community(g.simple.trim)
 
 # plot
 V(g.simple.trim)$color <- rainbow(max(fgc$membership))[fgc$membership]
-png("biggest_cluster_graph_FGCcoloring.png", width=5000, height=3000, res=200)
+png("report/biggest_cluster_graph_FGCcoloring.png", width=5000, height=3000, res=300)
 plot(g.simple.trim,
   layout = layout.fruchterman.reingold,
   vertex.label = NA,
@@ -75,8 +83,8 @@ communities = c(1:max(fgc$membership))
 for (i in communities){
   print(i)
   for (j in fgc$name[fgc$membership == i]) {
-    print(as.character(persontable[persontable$V1 == j, ]$V2))
-    print(bet[j])
+    name = as.character(persontable[persontable$V1 == j, ]$V2)
+    print(name)
   }
 }
 
@@ -90,24 +98,26 @@ metrics <- data.frame(
 )
 
 # table of nodes
+fgc.simple = fastgreedy.community(g.simple)
 ## id, label, value (centrality), group
-nodes = persontable[persontable$V1 %in% V(g.simple.trim)$name, ]
+nodes = persontable[persontable$V1 %in% V(g.simple)$name, ]
 colnames(nodes) = c("id", "label")
 nodes$title = nodes$label
-values = evcent(g.simple.trim)$vector[nodes$id]
+values = evcent(g.simple)$vector[nodes$id]
 values.norm = ((values - min(values)) / (max(values) - min(values)) * 10) + 10
 nodes$value = values.norm
-names(fgc$membership) <- fgc$names
-nodes$group = fgc$membership[nodes$id]
+names(fgc.simple$membership) <- fgc.simple$names
+nodes$group = fgc.simple$membership[nodes$id]
 nodes$id = as.numeric(nodes$id)
-write(jsonlite::toJSON(nodes), "nodes.json")
+write(jsonlite::toJSON(nodes), "report/nodes.json")
 
 # table of edges
 ## from, to, value (weight)
-edges = get.edgelist(g.simple.trim)
+edges = get.edgelist(g.simple)
 colnames(edges) <- c("from", "to")
 edges = as.data.frame(edges)
-edges$value <- as.vector(E(g.simple.trim)$weight)
+edges$value <- as.vector(E(g.simple)$weight)
 edges$from = as.numeric(as.vector(edges$from))
 edges$to = as.numeric(as.vector(edges$to))
-write(jsonlite::toJSON(edges), "edges.json")
+write(jsonlite::toJSON(edges), "report/edges.json")
+

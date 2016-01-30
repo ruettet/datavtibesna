@@ -31,7 +31,7 @@ with open("/media/sf_datasets/data-vti-be/relationships.sql") as f:
 
 all_nodes = {}
 all_edges = []
-cur.execute("select id from productions where season_id in (1670, 1671, 1672, 1673, 1674, 1675, 1676, 1705, 1706, 1708, 1709, 1710, 1711)")
+cur.execute("select id from productions where season_id in (1670, 1671, 1672, 1673, 1674, 1675, 1676, 1705, 1706, 1708, 1709, 1710, 1711) and rerun_of_id IS NULL")
 productions =  cur.fetchall()
 i = 1
 for production_id in productions:
@@ -39,7 +39,7 @@ for production_id in productions:
     print i, "of", len(productions)
   i += 1
   nodes = []
-  cur.execute("select person_id from relationships where production_id == " + str(production_id[0]) + " and function_id == 11571")
+  cur.execute("select person_id from relationships where production_id == " + str(production_id[0]) + " and function_id in (11571, 11933, 11971, 11977, 12009, 12018, 12019, 12092, 12156)")
   person_ids_in_production = cur.fetchall()
   for person_id in person_ids_in_production:
     if person_id[0] != None:
