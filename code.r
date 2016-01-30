@@ -109,7 +109,7 @@ nodes$value = values.norm
 names(fgc.simple$membership) <- fgc.simple$names
 nodes$group = fgc.simple$membership[nodes$id]
 nodes$id = as.numeric(nodes$id)
-write(jsonlite::toJSON(nodes), "report/nodes.json")
+write(jsonlite::toJSON(nodes), "report/nodes.js")
 
 # table of edges
 ## from, to, value (weight)
@@ -119,5 +119,5 @@ edges = as.data.frame(edges)
 edges$value <- as.vector(E(g.simple)$weight)
 edges$from = as.numeric(as.vector(edges$from))
 edges$to = as.numeric(as.vector(edges$to))
-write(jsonlite::toJSON(edges), "report/edges.json")
+write(jsonlite::toJSON(edges), "report/edges.js")
 
